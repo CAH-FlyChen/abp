@@ -4,10 +4,13 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Authorization;
 using Volo.Abp.Localization;
+using Volo.Abp.Settings;
+using Volo.Abp.Users;
 
 namespace Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations
 {
@@ -17,16 +20,25 @@ namespace Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations
         private readonly IServiceProvider _serviceProvider;
         private readonly IAbpAuthorizationPolicyProvider _abpAuthorizationPolicyProvider;
         private readonly IAuthorizationService _authorizationService;
+        private readonly ICurrentUser _currentUser;
+        private readonly ISettingProvider _settingProvider;
+        private readonly ISettingDefinitionManager _settingDefinitionManager;
 
         public AbpApplicationConfigurationAppService(
             IOptions<AbpLocalizationOptions> localizationOptions,
             IServiceProvider serviceProvider,
             IAbpAuthorizationPolicyProvider abpAuthorizationPolicyProvider,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            ICurrentUser currentUser, 
+            ISettingProvider settingProvider, 
+            SettingDefinitionManager settingDefinitionManager)
         {
             _serviceProvider = serviceProvider;
             _abpAuthorizationPolicyProvider = abpAuthorizationPolicyProvider;
             _authorizationService = authorizationService;
+            _currentUser = currentUser;
+            _settingProvider = settingProvider;
+            _settingDefinitionManager = settingDefinitionManager;
             _localizationOptions = localizationOptions.Value;
         }
 
@@ -36,12 +48,25 @@ namespace Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations
 
             return new ApplicationConfigurationDto
             {
-                Auth = await GetAuthConfig(),
-                Localization = GetLocalizationConfig()
+                Auth = await GetAuthConfigAsync(),
+                Localization = GetLocalizationConfig(),
+                CurrentUser = GetCurrentUser(),
+                Setting = await GetSettingConfigAsync()
             };
         }
 
-        protected virtual async Task<ApplicationAuthConfigurationDto> GetAuthConfig()
+        protected virtual CurrentUserDto GetCurrentUser()
+        {
+            return new CurrentUserDto
+            {
+                IsAuthenticated = _currentUser.IsAuthenticated,
+                Id = _currentUser.Id,
+                TenantId = _currentUser.TenantId,
+                UserName = _currentUser.UserName
+            };
+        }
+
+        protected virtual async Task<ApplicationAuthConfigurationDto> GetAuthConfigAsync()
         {
             var authConfig = new ApplicationAuthConfigurationDto();
 
@@ -80,6 +105,26 @@ namespace Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations
             }
 
             return localizationConfig;
+        }
+
+        private async Task<ApplicationSettingConfigurationDto> GetSettingConfigAsync()
+        {
+            var result = new ApplicationSettingConfigurationDto
+            {
+                Values = new Dictionary<string, string>()
+            };
+
+            foreach (var settingDefinition in _settingDefinitionManager.GetAll())
+            {
+                if (!settingDefinition.IsVisibleToClients)
+                {
+                    continue;
+                }
+
+                result.Values[settingDefinition.Name] = await _settingProvider.GetOrNullAsync(settingDefinition.Name);
+            }
+
+            return result;
         }
     }
 }

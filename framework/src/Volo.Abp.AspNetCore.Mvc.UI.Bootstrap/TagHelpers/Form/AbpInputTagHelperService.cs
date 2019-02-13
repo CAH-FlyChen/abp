@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
-using Volo.Abp.AspNetCore.Mvc.Localization;
 using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Form
@@ -49,7 +45,8 @@ namespace Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Form
                 output.TagMode = TagMode.StartTagAndEndTag;
                 output.TagName = "div";
                 LeaveOnlyGroupAttributes(context, output);
-                output.Attributes.AddClass(isCheckbox ? "form-check" : "form-group");
+                output.Attributes.AddClass(isCheckbox ? "custom-checkbox" : "form-group");
+                output.Attributes.AddClass(isCheckbox ? "custom-control" : "");
                 output.Attributes.AddClass(isCheckbox ? "mb-2" : "");
                 output.Content.SetHtmlContent(output.Content.GetContent() + innerHtml);
             }
@@ -58,7 +55,7 @@ namespace Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Form
         protected virtual string GetFormInputGroupAsHtml(TagHelperContext context, TagHelperOutput output, out bool isCheckbox)
         {
             var inputTag = GetInputTagHelperOutput(context, output, out isCheckbox);
-
+            
             var inputHtml = RenderTagHelperOutput(inputTag, _encoder);
             var label = GetLabelAsHtml(context, output, inputTag, isCheckbox);
             var info = GetInfoAsHtml(context, output, inputTag, isCheckbox);
@@ -96,7 +93,7 @@ namespace Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Form
 
         protected virtual string SurroundInnerHtmlAndGet(TagHelperContext context, TagHelperOutput output, string innerHtml, bool isCheckbox)
         {
-            return "<div class=\"" + (isCheckbox ? "form-check" : "form-group") + "\">" +
+            return "<div class=\"" + (isCheckbox ? "custom-checkbox custom-control" : "form-group") + "\">" +
                    Environment.NewLine + innerHtml + Environment.NewLine +
                    "</div>";
         }
@@ -145,7 +142,7 @@ namespace Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Form
 
             if (isCheckbox)
             {
-                className = "form-check-input";
+                className = "custom-control-input";
             }
 
             inputTagHelperOutput.Attributes.AddClass(className + " " + GetSize(context, output));
@@ -230,7 +227,7 @@ namespace Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Form
                 return GetLabelAsHtmlUsingTagHelper(context, output, isCheckbox) + GetRequiredSymbol(context, output, inputTag);
             }
 
-            var checkboxClass = isCheckbox ? "class=\"form-check-label\" " : "";
+            var checkboxClass = isCheckbox ? "class=\"custom-control-label\" " : "";
 
             return "<label " + checkboxClass + GetIdAttributeAsString(inputTag) + ">"
                    + TagHelper.Label +
@@ -298,7 +295,7 @@ namespace Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Form
 
             if (isCheckbox)
             {
-                attributeList.AddClass("form-check-label");
+                attributeList.AddClass("custom-control-label");
             }
 
             return RenderTagHelper(attributeList, context, labelTagHelper, _encoder, "label", TagMode.StartTagAndEndTag, true);

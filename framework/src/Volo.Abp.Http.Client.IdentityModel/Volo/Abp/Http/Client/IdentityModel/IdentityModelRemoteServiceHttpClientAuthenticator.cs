@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -22,28 +22,24 @@ namespace Volo.Abp.Http.Client.IdentityModel
 
         public async Task Authenticate(RemoteServiceHttpClientAuthenticateContext context)
         {
-            var accessToken = await GetAccessTokenFromHttpContextOrNullAsync();
+            if (context.RemoteService.GetUseCurrentAccessToken() != false)
+            {
+                var accessToken = await GetAccessTokenFromHttpContextOrNullAsync();
+                if (accessToken != null)
+                {
+                    context.Client.SetBearerToken(accessToken);
+                    return;
+                }
+            }
 
-            if (accessToken != null)
-            {
-                //TODO: "Bearer" should be configurable
-                context.Client.DefaultRequestHeaders.Authorization
-                    = new AuthenticationHeaderValue("Bearer", accessToken);
-            }
-            else
-            {
-                await IdentityModelHttpClientAuthenticator.Authenticate(
-                    new IdentityModelHttpClientAuthenticateContext(
-                        context.Client,
-                        context.RemoteService.GetIdentityClient()
-                    )
-                );
-            }
+            await IdentityModelHttpClientAuthenticator.AuthenticateAsync(
+                context.Client,
+                context.RemoteService.GetIdentityClient()
+            );
         }
 
         protected virtual async Task<string> GetAccessTokenFromHttpContextOrNullAsync()
         {
-            //TODO: What if the access_token in the current Http Request is not usable for this client?
             var httpContext = HttpContextAccessor?.HttpContext;
             if (httpContext == null)
             {

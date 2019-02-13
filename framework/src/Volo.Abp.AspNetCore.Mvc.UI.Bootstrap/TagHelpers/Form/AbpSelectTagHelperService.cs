@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -10,8 +9,6 @@ using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Options;
-using Volo.Abp.AspNetCore.Mvc.Localization;
 using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Form
@@ -258,11 +255,11 @@ namespace Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Form
             switch (TagHelper.Size)
             {
                 case AbpFormControlSize.Small:
-                    return "form-control-sm";
+                    return "custom-select-sm";
                 case AbpFormControlSize.Medium:
-                    return "form-control-md";
+                    return "custom-select-md";
                 case AbpFormControlSize.Large:
-                    return "form-control-lg";
+                    return "custom-select-lg";
             }
 
             return "";
@@ -279,6 +276,8 @@ namespace Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Form
             {
                 attrList.Add(tagHelperAttribute);
             }
+
+            attrList.AddClass("custom-select");
 
             return attrList;
         }

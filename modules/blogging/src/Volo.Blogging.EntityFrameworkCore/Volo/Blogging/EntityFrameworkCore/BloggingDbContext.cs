@@ -26,6 +26,7 @@ namespace Volo.Blogging.EntityFrameworkCore
         public DbSet<PostTag> PostTags { get; set; }
 
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<Customer> Customers { get; set; }
         
         public BloggingDbContext(DbContextOptions<BloggingDbContext> options)
             : base(options)

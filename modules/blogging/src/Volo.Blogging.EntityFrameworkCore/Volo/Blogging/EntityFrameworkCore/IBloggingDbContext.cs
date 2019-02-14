@@ -23,5 +23,7 @@ namespace Volo.Blogging.EntityFrameworkCore
         DbSet<PostTag> PostTags { get; set; }
 
         DbSet<Tag> Tags { get; set; }
+
+        DbSet<Customer> Customers { get; set; }
     }
 }
